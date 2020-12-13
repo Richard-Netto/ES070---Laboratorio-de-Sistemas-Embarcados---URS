@@ -48,10 +48,10 @@ SonarSensor::SonarSensor(int iEchoPinNumber, int iTriggerPinNumber)
 /*                   sensor. (int)                  */
 /* Output params:    Distance in cm.                */
 /****************************************************/
-int SonarSensor :: getDistance()
+int SonarSensor::getDistance()
 {
   // Short LOW pulse beforehand to ensure a clean HIGH pulse
-  digitalWrite(iTriggerPin, LOW); 
+  digitalWrite(iTriggerPin, LOW);
   delayMicroseconds(2);
   // Send HIGH pulse PING
   digitalWrite(iTriggerPin, HIGH);
