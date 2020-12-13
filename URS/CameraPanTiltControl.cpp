@@ -38,8 +38,8 @@ CameraPanTiltControl::CameraPanTiltControl(int iServoPanPin, int iServoTiltPin)
 /*                   axisY - Value of the axis       */
 /*                   position in X. Range 0 - 1024   */
 /*****************************************************/
-void updatePosition(int iAxisY, int iAxisX)
+void CameraPanTiltControl::updatePosition(int iAxisY, int iAxisX)
 {
-  //servPanServoMotor.write(iAxisY);
-  //servTiltServoMotor.write(iAxisX);
+  servPanServoMotor.write(iAxisY);
+  servTiltServoMotor.write(iAxisX);
 }
