@@ -23,8 +23,13 @@
 /******************************************************/
 CameraPanTiltControl::CameraPanTiltControl(int iServoPanPin, int iServoTiltPin)
 {
-  servPanServoMotor.attach(iServoPanPin);
-  servTiltServoMotor.attach(iServoTiltPin);
+  // Atach the servos considering the model SG90
+  // with min/max of 400us and 2400us
+  servPanServoMotor.attach(iServoPanPin, 500, 2200);
+  servTiltServoMotor.attach(iServoTiltPin, 500, 2200);
+  servTiltServoMotor.readMicroseconds();
+  servPanServoMotor.writeMicroseconds(1500);
+  servTiltServoMotor.writeMicroseconds(1500);
 }
 
 /*****************************************************/
@@ -40,6 +45,8 @@ CameraPanTiltControl::CameraPanTiltControl(int iServoPanPin, int iServoTiltPin)
 /*****************************************************/
 void CameraPanTiltControl::updatePosition(int iAxisY, int iAxisX)
 {
-  servPanServoMotor.write(iAxisY);
-  servTiltServoMotor.write(iAxisX);
+  servPanServoMotor.writeMicroseconds(iAxisY);
+  servTiltServoMotor.writeMicroseconds(iAxisX);
+  //servPanServoMotor.write(iAxisY);
+  //servTiltServoMotor.write(iAxisX);
 }

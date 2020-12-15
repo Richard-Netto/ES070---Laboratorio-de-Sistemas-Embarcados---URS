@@ -10,7 +10,7 @@
 /**************************************************/
 
 /*
-  1 - Criar funções básicas de servo motores e variáveis
+  1 - Criar funções básicas de servo motores e variáveis OK
   2 - Preparar para receber valores de 10 bits do Blynk com direção
   3 - Criar função de update com Timer
   4 - Fazer funções Teste
@@ -19,14 +19,19 @@
 // Library Includes
 #include "CameraPanTiltControl.h"
 // Variables
-CameraPanTiltControl cameraControl(15,14);
+int pos;
+CameraPanTiltControl cptCameraPanTiltControl(12, 13);
 
 // Setup Function
 void setup() {
-  
+  Serial.begin(115200);
 }
 
 // Loop Function
 void loop() {
-  cameraControl.updatePosition(90,90);
+  while (Serial.available()) {
+    pos = Serial.parseInt();
+    Serial.println(pos);
+    cptCameraPanTiltControl.updatePosition(pos, pos);
+  }
 }
