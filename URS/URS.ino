@@ -4,22 +4,24 @@
 /* File description: Main functon implementation  */
 /*                   for the URS project in the   */
 /*                   ESP32-CAM micro controller.  */
-/* Author name:      Richard Netto                */
+/* Author name:      Paola Harduim                */
 /* Creation date:    20/11/2020                   */
-/* Revision date:    16/12/2020                   */
+/* Revision date:    17/12/2020                   */
 /**************************************************/
 
 // Library Includes
-#include "CameraPanTiltControl.h"
+#include "MovementControl.h"
 
 // Defines
-#define TILT_SERVO_PIN         12
-#define PAN_SERVO_PIN          13
+#define LEFT_SERVO_PIN         15
+#define PAN_SERVO_PIN          14
 
 
 // Variables
-int pos = 511;
-CameraPanTiltControl cptCameraPanTiltControl(TILT_SERVO_PIN, PAN_SERVO_PIN);
+int iLeftMotorPosition = 511;
+int iRightMotorPosition = 511;
+int iNewMotorPosition = 511;
+MovementControl mcMovementControl(LEFT_SERVO_PIN, PAN_SERVO_PIN);
 hw_timer_t *timer = NULL;
 int iContMiliseconds = 0;
 
@@ -35,7 +37,7 @@ void IRAM_ATTR updateFunction() {
   iContMiliseconds += 1;
   // Every 10 ms call
   if (iContMiliseconds % 10 == 0) {
-    cptCameraPanTiltControl.updatePosition(pos, pos);
+    mcMovementControl.updateMovement(iLeftMotorPosition, iRightMotorPosition);
   }
 }
 
@@ -97,7 +99,56 @@ void setup() {
 /******************************************************/
 void loop() {
   while (Serial.available()) {
-    pos = Serial.parseInt();
-    Serial.println(pos);
+    iNewMotorPosition = Serial.parseInt();
+    Serial.println(iNewMotorPosition);
+    testFunction_1(iNewMotorPosition);
+    testFunction_2(iNewMotorPosition);
   }
+}
+
+/******************************************************/
+/* Method name:        testFunction_1                 */
+/* Method description: Function to test the movement  */
+/*                     control, it will move the car  */
+/*                     foward and backward until the  */
+/*                     desired value.                 */
+/*                                                    */
+/* Input params:       int pos - Value of the máx     */
+/*                     velocity.                      */
+/* Output params:                                     */
+/******************************************************/
+void testFunction_1(int iPosition){
+  Serial.println("Foward");
+  iLeftMotorPosition = 511 +(iPosition - 511);
+  iRightMotorPosition = 511 +(iPosition - 511);
+  delay(2000);
+  Serial.println("Backward");
+  iLeftMotorPosition = 511 -(iPosition - 511);
+  iRightMotorPosition = 511 -(iPosition - 511);
+  delay(2000);
+  
+  iLeftMotorPosition = 511;
+  iRightMotorPosition = 511;
+}
+
+/******************************************************/
+/* Method name:        testFunction_2                 */
+/* Method description: Function to test the movement  */
+/*                     control, it will rotate the car*/ 
+/*                     in place in the desired        */
+/*                     velocity.                      */
+/*                                                    */
+/* Input params:       int pos - Value of the máx     */
+/*                     velocity.                      */
+/* Output params:                                     */
+/******************************************************/
+void testFunction_2(int iPosition){
+  iLeftMotorPosition = 511 +(iPosition - 511);
+  iRightMotorPosition = 511 -(iPosition - 511);
+  delay(2000);
+  iLeftMotorPosition = 511 -(iPosition - 511);
+  iRightMotorPosition = 511 +(iPosition - 511);
+  delay(2000);
+  iLeftMotorPosition = 511;
+  iRightMotorPosition = 511;
 }
