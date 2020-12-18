@@ -17,8 +17,8 @@
 
 // Defines
 #define LEFT_SERVO_PIN         15
-#define RIGHT_SERVO_PIN          14
-
+#define RIGHT_SERVO_PIN        14
+//#define INTERRUPT_ATTR IRAM_ATTR
 
 // Variables
 int iLeftMotorPosition = 511;
@@ -94,7 +94,7 @@ void initTimerAlarm(int iTimerNumber, int iPrescaler, int iAlarmPeriod) {
 void setup() {
   Serial.begin(115200);
   // Create Timer of 1 MHz with an alarm of 1 ms
-  initTimerAlarm(0, 80, 1000);
+  
 
   Serial.print("Connecting to ");
   Serial.println(ssid);
@@ -108,6 +108,8 @@ void setup() {
   Serial.println("IP address: ");
   Serial.println(WiFi.localIP());
   httpClient.begin(serverName);
+  
+  initTimerAlarm(0, 80, 1000);
 }
 
 /******************************************************/
@@ -131,8 +133,8 @@ void loop() {
   JSONVar myArray = JSON.parse(payload);
   iAxisX = JSON.parse(myArray[0]);
   iAxisY = JSON.parse(myArray[1]);
-  iLeftMotorPosition = 511 + (iAxisY - 511) +(iAxisX - 511);
-  iRightMotorPosition = 511 + (iAxisY - 511) -(iAxisX - 511);
+  iLeftMotorPosition = 511 + (iAxisY - 511) +(iAxisX - 511)*0.40;
+  iRightMotorPosition = 511 + (iAxisY - 511) -(iAxisX - 511)*0.40;
   delay(20);
 }
 
