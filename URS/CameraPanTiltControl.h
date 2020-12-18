@@ -74,12 +74,12 @@ class CameraPanTiltControl
     /*                     of each servo motor to move   */
     /*                     the camera.                   */
     /*                                                   */
-    /* Input params:     iAxisY - Value of the axis      */
-    /*                   position in Y. Range 0 - 1023   */
-    /*                   iAxisX - Value of the axis      */
+    /* Input params:     iAxisX - Value of the axis      */
     /*                   position in X. Range 0 - 1023   */
+    /*                   iAxisY - Value of the axis      */
+    /*                   position in Y. Range 0 - 1023   */
     /*****************************************************/
-    void updatePosition(int iAxisY, int iAxisX);
+    void updatePosition(int iAxisX, int iAxisY);
 };
 
 #endif

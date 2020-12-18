@@ -29,7 +29,7 @@ int iContMiliseconds = 0;
 HTTPClient httpClient;
 const char* ssid = "Quarto";
 const char* password = "Netto2014";
-const char* serverName = "http://blynk-cloud.com/2bJCP-DrOGFj3RMy1Rm76e8N3_54lLk8/get/V1";
+const char* serverName = "http://blynk-cloud.com/2bJCP-DrOGFj3RMy1Rm76e8N3_54lLk8/get/V2";
 
 /******************************************************/
 /* Method name:        updateFunction                 */
@@ -43,7 +43,7 @@ void IRAM_ATTR updateFunction() {
   iContMiliseconds += 1;
   // Every 10 ms call
   if (iContMiliseconds % 10 == 0) {
-    cptCameraPanTiltControl.updatePosition(iAxisY, iAxisX);
+    cptCameraPanTiltControl.updatePosition(iAxisX, iAxisY);
   }
 }
 
@@ -90,9 +90,7 @@ void initTimerAlarm(int iTimerNumber, int iPrescaler, int iAlarmPeriod) {
 /******************************************************/
 void setup() {
   Serial.begin(115200);
-  // Create Timer of 1 MHz with an alarm of 1 ms
-  initTimerAlarm(0, 80, 1000);
-
+  
   // Criar função para conexão com internet
   Serial.print("Connecting to ");
   Serial.println(ssid);
@@ -107,6 +105,9 @@ void setup() {
   Serial.println(WiFi.localIP());
 
   httpClient.begin(serverName);
+
+  // Create Timer of 1 MHz with an alarm of 1 ms
+  initTimerAlarm(0, 80, 1000);
 }
 
 /******************************************************/

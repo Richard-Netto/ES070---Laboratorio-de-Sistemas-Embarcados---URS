@@ -46,18 +46,18 @@ CameraPanTiltControl::CameraPanTiltControl(int iServoTiltPin, int iServoPanPin)
 /*                   iAxisX - Value of the axis      */
 /*                   position in X. Range 0 - 1023   */
 /*****************************************************/
-void CameraPanTiltControl::updatePosition(int iAxisY, int iAxisX)
+void CameraPanTiltControl::updatePosition(int iAxisX, int iAxisY)
 {
   // Clamp Pan Values
-  int iClampedAxisY = clampValues(iAxisY + PAN_CENTERING_VALUE, MIN_PAN_SERVO_10BIT_VALUE, MAX_PAN_SERVO_10BIT_VALUE);
+  int iClampedAxisX = clampValues(iAxisX+ PAN_CENTERING_VALUE, MIN_PAN_SERVO_10BIT_VALUE, MAX_PAN_SERVO_10BIT_VALUE);
   // Update Pan dutycycle
-  int iPanDutyCycle = map(iClampedAxisY, 0, 1023, 0, 8888); // 10 bit to 16 bit map
+  int iPanDutyCycle = map(iClampedAxisX, 1023, 0, 0, 8888); // 10 bit to 16 bit map
   ledcWrite(PAN_SERVO_CHANNEL, iPanDutyCycle);
 
   // Clamp Tilt Values
-  int iClampedAxisX = clampValues(iAxisY + TILT_CENTERING_VALUE, MIN_TILT_SERVO_10BIT_VALUE, MAX_TILT_SERVO_10BIT_VALUE);
+  int iClampedAxisY = clampValues(iAxisY + TILT_CENTERING_VALUE, MIN_TILT_SERVO_10BIT_VALUE, MAX_TILT_SERVO_10BIT_VALUE);
   // Update Tilt dutycycle
-  int iTiltDutyCycle = map(iClampedAxisX, 0, 1023, 0, 8888); // 10 bit to 16 bit map
+  int iTiltDutyCycle = map(iClampedAxisY, 1023, 0, 0, 8888); // 10 bit to 16 bit map
   ledcWrite(TILT_SERVO_CHANNEL, iTiltDutyCycle);
 }
 
