@@ -7,7 +7,6 @@
 /* Creation date:    20/11/2020                   */
 /* Revision date:    20/11/2020                   */
 /**************************************************/
-#include "Arduino.h"
 #include "SonarSensor.h"
 
 /****************************************************/
@@ -30,7 +29,7 @@ SonarSensor::SonarSensor(int iEchoPinNumber, int iTriggerPinNumber)
   pinMode(iEchoPin, INPUT);
   pinMode(iTriggerPin, OUTPUT);
   // Initial variables of a linear sensor
-  lA = 29;
+  lA = 0.03;
   lB = 0.00;
 }
 
@@ -48,7 +47,7 @@ SonarSensor::SonarSensor(int iEchoPinNumber, int iTriggerPinNumber)
 /*                   sensor. (int)                  */
 /* Output params:    Distance in cm.                */
 /****************************************************/
-int SonarSensor::getDistance()
+float SonarSensor::getDistance()
 {
   // Short LOW pulse beforehand to ensure a clean HIGH pulse
   digitalWrite(iTriggerPin, LOW);
@@ -61,6 +60,7 @@ int SonarSensor::getDistance()
   // Read the PING echo from an obstacle and gives back the time it took
   lDuration = pulseIn(iEchoPin, HIGH);
   // Calculate the distance
-  iDistanceCm = lDuration / lA / 2 + lB;
-  return iDistanceCm;
+  Serial.println(lDuration);
+  fDistanceCm = lDuration * lA + lB;
+  return fDistanceCm;
 }

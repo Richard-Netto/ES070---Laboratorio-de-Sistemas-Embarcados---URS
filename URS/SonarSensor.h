@@ -18,17 +18,17 @@
 /*                    services for the Sonar Sensor */
 /*                    HC-SC04 hardware.             */
 /****************************************************/
-class SonarSensor 
+class SonarSensor
 {
-    private:
+  private:
     // Variáveis Privadas:
     int iEchoPin;
     int iTriggerPin;
-    long lDuration;
-    int iDistanceCm;
-    long lA,lB;
+    float lDuration;
+    float fDistanceCm;
+    float lA, lB;
 
-    public:
+  public:
 
     // Métodos Públicos
 
@@ -58,8 +58,8 @@ class SonarSensor
     /*                   to the trigger signal of the   */
     /*                   sensor. (int)                  */
     /****************************************************/
-    int getDistance();
-    
+    float getDistance();
+
 };
 
 #endif
