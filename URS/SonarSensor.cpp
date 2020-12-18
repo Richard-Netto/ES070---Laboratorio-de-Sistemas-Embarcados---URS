@@ -5,7 +5,7 @@
 /*                   the HC-SC04 distance sensor. */
 /* Author name:      Richard Netto                */
 /* Creation date:    20/11/2020                   */
-/* Revision date:    20/11/2020                   */
+/* Revision date:    18/12/2020                   */
 /**************************************************/
 #include "SonarSensor.h"
 
@@ -19,8 +19,9 @@
 /*                     iTriggerPin - Pin associated */
 /*                     to the trigger signal of the */
 /*                     sensor. (int)                */
+/* Output params:                                   */
 /****************************************************/
-SonarSensor::SonarSensor(int iEchoPinNumber, int iTriggerPinNumber)
+SonarSensor::SonarSensor(int iEchoPinNumber, int iTriggerPinNumber, float fFittingA, float fFittingB)
 {
   // Salve the Pin Numbers
   iEchoPin = iEchoPinNumber;
@@ -28,9 +29,8 @@ SonarSensor::SonarSensor(int iEchoPinNumber, int iTriggerPinNumber)
   // Set the Pin Modes for the sensor
   pinMode(iEchoPin, INPUT);
   pinMode(iTriggerPin, OUTPUT);
-  // Initial variables of a linear sensor
-  lA = 0.03;
-  lB = 0.00;
+  fA = fFittingA;
+  fB = fFittingB / fFittingA;
 }
 
 /****************************************************/
@@ -58,9 +58,9 @@ float SonarSensor::getDistance()
   digitalWrite(iTriggerPin, LOW);
 
   // Read the PING echo from an obstacle and gives back the time it took
-  lDuration = pulseIn(iEchoPin, HIGH);
+  fDuration = pulseIn(iEchoPin, HIGH);
   // Calculate the distance
-  Serial.println(lDuration);
-  fDistanceCm = lDuration * lA + lB;
+  Serial.println(fDuration);
+  fDistanceCm = fDuration / fA - fB;
   return fDistanceCm;
 }

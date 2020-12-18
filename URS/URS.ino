@@ -16,14 +16,18 @@
 #define WALL_SENSOR_ECHO_PIN              13
 #define FLOOR_SENSOR_TRIGGER_PIN          15
 #define WALL_SENSOR_TRIGGER_PIN           12
+#define FLOOR_SENSOR_FITTING_A            54.6839 // Obtained by empirical manners
+#define FLOOR_SENSOR_FITTING_B            5.7238  // Obtained by empirical manners
+#define WALL_SENSOR_FITTING_A             54.6536 // Obtained by empirical manners
+#define WALL_SENSOR_FITTING_B             -7.3905 // Obtained by empirical manners
 
 // Variables
-SonarSensor ssFloorSensor(FLOOR_SENSOR_ECHO_PIN, FLOOR_SENSOR_TRIGGER_PIN);
-SonarSensor ssWallSensor(WALL_SENSOR_ECHO_PIN, WALL_SENSOR_TRIGGER_PIN);
+SonarSensor ssFloorSensor(FLOOR_SENSOR_ECHO_PIN, FLOOR_SENSOR_TRIGGER_PIN, FLOOR_SENSOR_FITTING_A, FLOOR_SENSOR_FITTING_B);
+SonarSensor ssWallSensor(WALL_SENSOR_ECHO_PIN, WALL_SENSOR_TRIGGER_PIN, WALL_SENSOR_FITTING_A, WALL_SENSOR_FITTING_B);
 float iFloorDistance;
 float iWallDistance;
 int iContMiliseconds;
-hw_timer_t *timer = NULL;
+hw_timer_t *hwTimer = NULL;
 
 /******************************************************/
 /* Method name:        updateFunction                 */
@@ -35,11 +39,9 @@ hw_timer_t *timer = NULL;
 /******************************************************/
 void IRAM_ATTR updateFunction() {
   iContMiliseconds += 1;
-  // Every 1000 ms call
+  // Every 250 ms call
   if (iContMiliseconds % 1000 == 0) {
-//    iFloorDistance = ssFloorSensor.getDistance();
-//    iWallDistance = ssWallSensor.getDistance();
-//    printSensorData(iFloorDistance, iWallDistance);
+    printSensorData(iFloorDistance, iWallDistance);
   }
 }
 
@@ -67,13 +69,13 @@ void initTimerAlarm(int iTimerNumber, int iPrescaler, int iAlarmPeriod) {
   //Timer setup
   // Inicia o timer 0 (of 4) e divide sua
   // frequência base por 80 (1 MHz de resultado)
-  timer = timerBegin(iTimerNumber, iPrescaler, true);
+  hwTimer = timerBegin(iTimerNumber, iPrescaler, true);
   // Adiciona uma função de retorno para a interrupção
-  timerAttachInterrupt(timer, &updateFunction, true);
+  timerAttachInterrupt(hwTimer, &updateFunction, true);
   // Cria alarme para chamar a função a cada 1 ms
-  timerAlarmWrite(timer, iAlarmPeriod, true);
+  timerAlarmWrite(hwTimer, iAlarmPeriod, true);
   // Inicia o Alarme
-  timerAlarmEnable(timer);
+  timerAlarmEnable(hwTimer);
 }
 
 /******************************************************/
@@ -116,10 +118,10 @@ void loop() {
 /* Input params:                                      */
 /* Output params:                                     */
 /******************************************************/
-void printSensorData(float iFloorDistance, float iWallDistance){
+void printSensorData(float iFloorDistance, float iWallDistance) {
   Serial.print("Floor Sensor: ");
   Serial.print(iFloorDistance);
-  Serial.print(" cm                              Wall Sensor: ");
+  Serial.print(" cm                Wall Sensor: ");
   Serial.print(iWallDistance);
   Serial.println(" cm.");
   delay(500);
