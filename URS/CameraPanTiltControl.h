@@ -65,6 +65,7 @@ class CameraPanTiltControl
     /*                     for the Pan Servo Motor.       */
     /*                     int iServoTiltPin - Pin number */
     /*                     for the Tilt Servo Motor.      */
+    /* Output params:                                     */
     /******************************************************/
     CameraPanTiltControl(int iServoTiltPin, int iServoPanPin);
 
@@ -78,6 +79,7 @@ class CameraPanTiltControl
     /*                   position in X. Range 0 - 1023   */
     /*                   iAxisY - Value of the axis      */
     /*                   position in Y. Range 0 - 1023   */
+    /* Output params:                                    */
     /*****************************************************/
     void updatePosition(int iAxisX, int iAxisY);
 };

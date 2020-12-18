@@ -23,6 +23,7 @@
 /*                     for the Pan Servo Motor.       */
 /*                     int iServoTiltPin - Pin number */
 /*                     for the Tilt Servo Motor.      */
+/* Output params:                                     */
 /******************************************************/
 CameraPanTiltControl::CameraPanTiltControl(int iServoTiltPin, int iServoPanPin)
 {
@@ -45,11 +46,12 @@ CameraPanTiltControl::CameraPanTiltControl(int iServoTiltPin, int iServoPanPin)
 /*                   position in Y. Range 0 - 1023   */
 /*                   iAxisX - Value of the axis      */
 /*                   position in X. Range 0 - 1023   */
+/* Output params:                                    */
 /*****************************************************/
 void CameraPanTiltControl::updatePosition(int iAxisX, int iAxisY)
 {
   // Clamp Pan Values
-  int iClampedAxisX = clampValues(iAxisX+ PAN_CENTERING_VALUE, MIN_PAN_SERVO_10BIT_VALUE, MAX_PAN_SERVO_10BIT_VALUE);
+  int iClampedAxisX = clampValues(iAxisX + PAN_CENTERING_VALUE, MIN_PAN_SERVO_10BIT_VALUE, MAX_PAN_SERVO_10BIT_VALUE);
   // Update Pan dutycycle
   int iPanDutyCycle = map(iClampedAxisX, 1023, 0, 0, 8888); // 10 bit to 16 bit map
   ledcWrite(PAN_SERVO_CHANNEL, iPanDutyCycle);
@@ -73,7 +75,7 @@ void CameraPanTiltControl::updatePosition(int iAxisX, int iAxisY)
 /*                     clamp.                         */
 /*                     int iMaxValue - Min Value to   */
 /*                     clamp.                         */
-/* Output params:      int iClampedValue - Clamped    */
+/* Output params:      int iFinalValue - Clamped      */
 /*                     value obtained.                */
 /******************************************************/
 int CameraPanTiltControl::clampValues(int iValue, int iMinValue, int iMaxValue) {

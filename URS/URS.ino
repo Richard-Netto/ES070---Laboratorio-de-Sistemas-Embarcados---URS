@@ -24,7 +24,7 @@
 int iAxisX = 511;
 int iAxisY = 511;
 CameraPanTiltControl cptCameraPanTiltControl(TILT_SERVO_PIN, PAN_SERVO_PIN);
-hw_timer_t *timer = NULL;
+hw_timer_t *hwTimer = NULL;
 int iContMiliseconds = 0;
 HTTPClient httpClient;
 const char* ssid = "Quarto";
@@ -71,13 +71,13 @@ void initTimerAlarm(int iTimerNumber, int iPrescaler, int iAlarmPeriod) {
   //Timer setup
   // Inicia o timer 0 (of 4) e divide sua
   // frequência base por 80 (1 MHz de resultado)
-  timer = timerBegin(iTimerNumber, iPrescaler, true);
+  hwTimer = timerBegin(iTimerNumber, iPrescaler, true);
   // Adiciona uma função de retorno para a interrupção
-  timerAttachInterrupt(timer, &updateFunction, true);
+  timerAttachInterrupt(hwTimer, &updateFunction, true);
   // Cria alarme para chamar a função a cada 1 ms
-  timerAlarmWrite(timer, iAlarmPeriod, true);
+  timerAlarmWrite(hwTimer, iAlarmPeriod, true);
   // Inicia o Alarme
-  timerAlarmEnable(timer);
+  timerAlarmEnable(hwTimer);
 }
 
 /******************************************************/
@@ -90,7 +90,7 @@ void initTimerAlarm(int iTimerNumber, int iPrescaler, int iAlarmPeriod) {
 /******************************************************/
 void setup() {
   Serial.begin(115200);
-  
+
   // Criar função para conexão com internet
   Serial.print("Connecting to ");
   Serial.println(ssid);
@@ -120,10 +120,10 @@ void setup() {
 /* Output params:                                     */
 /******************************************************/
 void loop() {
-//  while (Serial.available()) {
-//    pos = Serial.parseInt();
-//    Serial.println(pos)
-//  }
+  //  while (Serial.available()) {
+  //    pos = Serial.parseInt();
+  //    Serial.println(pos)
+  //  }
   int httpCode = httpClient.GET();
   String payload = httpClient.getString();
   JSONVar myArray = JSON.parse(payload);
