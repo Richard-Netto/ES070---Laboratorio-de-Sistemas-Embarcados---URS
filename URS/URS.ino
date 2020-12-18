@@ -11,19 +11,28 @@
 
 // Library Includes
 #include "MovementControl.h"
+#include <HTTPClient.h>
+#include <WiFi.h>
+#include <Arduino_JSON.h>
 
 // Defines
 #define LEFT_SERVO_PIN         15
-#define PAN_SERVO_PIN          14
+#define RIGHT_SERVO_PIN          14
 
 
 // Variables
 int iLeftMotorPosition = 511;
 int iRightMotorPosition = 511;
 int iNewMotorPosition = 511;
-MovementControl mcMovementControl(LEFT_SERVO_PIN, PAN_SERVO_PIN);
+int iAxisX = 0;
+int iAxisY = 0;
+MovementControl mcMovementControl(LEFT_SERVO_PIN, RIGHT_SERVO_PIN);
 hw_timer_t *timer = NULL;
 int iContMiliseconds = 0;
+const char* ssid = "Quarto";
+const char* password = "Netto2014";
+const char* serverName = "http://blynk-cloud.com/2bJCP-DrOGFj3RMy1Rm76e8N3_54lLk8/get/V1";
+HTTPClient httpClient;
 
 /******************************************************/
 /* Method name:        updateFunction                 */
@@ -86,6 +95,19 @@ void setup() {
   Serial.begin(115200);
   // Create Timer of 1 MHz with an alarm of 1 ms
   initTimerAlarm(0, 80, 1000);
+
+  Serial.print("Connecting to ");
+  Serial.println(ssid);
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println("");
+  Serial.println("WiFi connected.");
+  Serial.println("IP address: ");
+  Serial.println(WiFi.localIP());
+  httpClient.begin(serverName);
 }
 
 /******************************************************/
@@ -98,12 +120,20 @@ void setup() {
 /* Output params:                                     */
 /******************************************************/
 void loop() {
-  while (Serial.available()) {
-    iNewMotorPosition = Serial.parseInt();
-    Serial.println(iNewMotorPosition);
-    testFunction_1(iNewMotorPosition);
-    testFunction_2(iNewMotorPosition);
-  }
+  //  while (Serial.available()) {
+  //    iNewMotorPosition = Serial.parseInt();
+  //    Serial.println(iNewMotorPosition);
+  //    testFunction_1(iNewMotorPosition);
+  //    testFunction_2(iNewMotorPosition);
+  //  }
+  int httpCode = httpClient.GET();
+  String payload = httpClient.getString();
+  JSONVar myArray = JSON.parse(payload);
+  iAxisX = JSON.parse(myArray[0]);
+  iAxisY = JSON.parse(myArray[1]);
+  iLeftMotorPosition = 511 + (iAxisY - 511) +(iAxisX - 511);
+  iRightMotorPosition = 511 + (iAxisY - 511) -(iAxisX - 511);
+  delay(20);
 }
 
 /******************************************************/
@@ -117,16 +147,16 @@ void loop() {
 /*                     velocity.                      */
 /* Output params:                                     */
 /******************************************************/
-void testFunction_1(int iPosition){
+void testFunction_1(int iPosition) {
   Serial.println("Foward");
-  iLeftMotorPosition = 511 +(iPosition - 511);
-  iRightMotorPosition = 511 +(iPosition - 511);
+  iLeftMotorPosition = 511 + (iPosition - 511);
+  iRightMotorPosition = 511 + (iPosition - 511);
   delay(2000);
   Serial.println("Backward");
-  iLeftMotorPosition = 511 -(iPosition - 511);
-  iRightMotorPosition = 511 -(iPosition - 511);
+  iLeftMotorPosition = 511 - (iPosition - 511);
+  iRightMotorPosition = 511 - (iPosition - 511);
   delay(2000);
-  
+
   iLeftMotorPosition = 511;
   iRightMotorPosition = 511;
 }
@@ -134,7 +164,7 @@ void testFunction_1(int iPosition){
 /******************************************************/
 /* Method name:        testFunction_2                 */
 /* Method description: Function to test the movement  */
-/*                     control, it will rotate the car*/ 
+/*                     control, it will rotate the car*/
 /*                     in place in the desired        */
 /*                     velocity.                      */
 /*                                                    */
@@ -142,12 +172,12 @@ void testFunction_1(int iPosition){
 /*                     velocity.                      */
 /* Output params:                                     */
 /******************************************************/
-void testFunction_2(int iPosition){
-  iLeftMotorPosition = 511 +(iPosition - 511);
-  iRightMotorPosition = 511 -(iPosition - 511);
+void testFunction_2(int iPosition) {
+  iLeftMotorPosition = 511 + (iPosition - 511);
+  iRightMotorPosition = 511 - (iPosition - 511);
   delay(2000);
-  iLeftMotorPosition = 511 -(iPosition - 511);
-  iRightMotorPosition = 511 +(iPosition - 511);
+  iLeftMotorPosition = 511 - (iPosition - 511);
+  iRightMotorPosition = 511 + (iPosition - 511);
   delay(2000);
   iLeftMotorPosition = 511;
   iRightMotorPosition = 511;
