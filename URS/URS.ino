@@ -18,7 +18,6 @@
 // Defines
 #define LEFT_SERVO_PIN         15
 #define RIGHT_SERVO_PIN        14
-//#define INTERRUPT_ATTR IRAM_ATTR
 
 // Variables
 int iLeftMotorPosition = 511;
@@ -27,7 +26,7 @@ int iNewMotorPosition = 511;
 int iAxisX = 0;
 int iAxisY = 0;
 MovementControl mcMovementControl(LEFT_SERVO_PIN, RIGHT_SERVO_PIN);
-hw_timer_t *timer = NULL;
+hw_timer_t *hwTimer = NULL;
 int iContMiliseconds = 0;
 const char* ssid = "Quarto";
 const char* password = "Netto2014";
@@ -74,13 +73,13 @@ void initTimerAlarm(int iTimerNumber, int iPrescaler, int iAlarmPeriod) {
   //Timer setup
   // Inicia o timer 0 (of 4) e divide sua
   // frequência base por 80 (1 MHz de resultado)
-  timer = timerBegin(iTimerNumber, iPrescaler, true);
+  hwTimer = timerBegin(iTimerNumber, iPrescaler, true);
   // Adiciona uma função de retorno para a interrupção
-  timerAttachInterrupt(timer, &updateFunction, true);
+  timerAttachInterrupt(hwTimer, &updateFunction, true);
   // Cria alarme para chamar a função a cada 1 ms
-  timerAlarmWrite(timer, iAlarmPeriod, true);
+  timerAlarmWrite(hwTimerer, iAlarmPeriod, true);
   // Inicia o Alarme
-  timerAlarmEnable(timer);
+  timerAlarmEnable(hwTimer);
 }
 
 /******************************************************/

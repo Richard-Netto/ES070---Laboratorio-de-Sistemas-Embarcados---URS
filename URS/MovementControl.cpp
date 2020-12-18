@@ -21,6 +21,7 @@
 /*                     rightServoPin - Pin           */
 /*                     associated to the PWM signal  */
 /*                     of the right servo. (int)     */
+/* Output params:                                    */
 /*****************************************************/
 MovementControl::MovementControl(int iLeftServoPin, int iRightServoPin)
 {
@@ -47,6 +48,7 @@ MovementControl::MovementControl(int iLeftServoPin, int iRightServoPin)
 /*                     iAxisX - Value of the axis    */
 /*                     position in X, ranging from 0 */
 /*                     to 1023. (int)                */
+/* Output params:                                    */
 /*****************************************************/
 void MovementControl::updateMovement(int iAxisY, int iAxisX)
 {

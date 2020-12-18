@@ -15,14 +15,12 @@
 #include "Arduino.h"
 
 // Defines
-#define SERVO_FREQUENCY_HZ               50   // Product Manufactor Manual Value 
-#define RIGHT_SERVO_CHANNEL                2
+#define SERVO_FREQUENCY_HZ               50  // Product Manufactor Manual Value 
+#define RIGHT_SERVO_CHANNEL              2
 #define LEFT_SERVO_CHANNEL               3
 #define PWM_RESOLUTION                   16
-
-#define RIGHT_CENTERING_VALUE              0   // Obtained by empirical manners
+#define RIGHT_CENTERING_VALUE            0   // Obtained by empirical manners
 #define LEFT_CENTERING_VALUE             0   // Obtained by empirical manners
-
 #define MAX_VELOCITY_SERVO_VALUE         646 //Obtained by empirical manners
 #define MIN_VELOCITY_SERVO_VALUE         376 //Obtained by empirical manners
 
@@ -65,6 +63,7 @@ class MovementControl
     /*                     iRightServoPin - Pin          */
     /*                     associated to the PWM signal  */
     /*                     of the right servo. (int)     */
+    /* Output params:                                    */
     /*****************************************************/
     MovementControl(int iLeftServoPin, int iRightServoPin);
 
@@ -82,6 +81,7 @@ class MovementControl
     /*                     iAxisX - Value of the axis    */
     /*                     position in X, ranging from 0 */
     /*                     to 1023. (int)                */
+    /* Output params:                                    */
     /*****************************************************/
     void updateMovement(int iAxisY, int iAxisX);
 };
