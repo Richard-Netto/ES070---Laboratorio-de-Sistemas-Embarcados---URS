@@ -101,6 +101,14 @@ void handleJpg(void)
   client.write((char *)cam.getfb(), cam.getSize());
 }
 
+/******************************************************/
+/* Method name:        handleNotFound                 */
+/* Method description: Function to erros on image     */
+/*                     handle.                        */
+/*                                                    */
+/* Input params:                                      */
+/* Output params:                                     */
+/******************************************************/
 void handleNotFound()
 {
   String message = "Server is running!\n\n";
@@ -115,19 +123,16 @@ void handleNotFound()
 }
 
 /******************************************************/
-/* Method name:        setup                          */
-/* Method description: Setup function of Arduino, used*/
-/*                     only once on start.            */
+/* Method name:        initCamera                     */
+/* Method description: Set up camera configurations   */
+/*                     for the best configuration for */
+/*                     fast streaming.                */
 /*                                                    */
 /* Input params:                                      */
 /* Output params:                                     */
 /******************************************************/
-void setup()
+void initCamera(void)
 {
-
-  Serial.begin(115200);
-  //while (!Serial);            //wait for serial connection.
-
   camera_config_t config;
   config.ledc_channel = LEDC_CHANNEL_0;
   config.ledc_timer = LEDC_TIMER_0;
@@ -161,9 +166,21 @@ void setup()
 #endif
 
   cam.init(config);
+}
 
+/******************************************************/
+/* Method name:        initWiFi                       */
+/* Method description: Set up Wifi connection, to the */
+/*                     desired WiFi Network, and print*/
+/*                     the current link for the       */
+/*                     streaming.                     */
+/*                                                    */
+/* Input params:                                      */
+/* Output params:                                     */
+/******************************************************/
+void initWiFi(void)
+{
   IPAddress ip;
-
   WiFi.mode(WIFI_STA);
   WiFi.begin(SSID1, PWD1);
   while (WiFi.status() != WL_CONNECTED)
@@ -182,6 +199,21 @@ void setup()
   server.on("/jpg", HTTP_GET, handleJpg);
   server.onNotFound(handleNotFound);
   server.begin();
+}
+
+/******************************************************/
+/* Method name:        setup                          */
+/* Method description: Setup function of Arduino, used*/
+/*                     only once at the start.        */
+/*                                                    */
+/* Input params:                                      */
+/* Output params:                                     */
+/******************************************************/
+void setup()
+{
+  Serial.begin(115200);
+  initCamera();
+  initWiFi();
 }
 
 /******************************************************/
