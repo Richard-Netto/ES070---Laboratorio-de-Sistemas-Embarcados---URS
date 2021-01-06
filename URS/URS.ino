@@ -32,6 +32,22 @@ const char* password = "Netto2014";
 const char* serverName = "http://blynk-cloud.com/2bJCP-DrOGFj3RMy1Rm76e8N3_54lLk8/get/V2";
 
 /******************************************************/
+/* Method name:        updateFunction                 */
+/* Method description: Callback function for the      */
+/*                     Alarm Timer.                   */
+/*                                                    */
+/* Input params:                                      */
+/* Output params:                                     */
+/******************************************************/
+void IRAM_ATTR updateFunction() {
+  iContMiliseconds += 1;
+  // Every 10 ms call
+  if (iContMiliseconds % 10 == 0) {
+    cptCameraPanTiltControl.updatePosition(iAxisX, iAxisY);
+  }
+}
+
+/******************************************************/
 /* Method name:        initTimerAlarm                 */
 /* Method description: Callback function for the      */
 /*                     Alarm Timer.                   */
@@ -62,22 +78,6 @@ void initTimerAlarm(int iTimerNumber, int iPrescaler, int iAlarmPeriod) {
   timerAlarmWrite(hwTimer, iAlarmPeriod, true);
   // Inicia o Alarme
   timerAlarmEnable(hwTimer);
-}
-
-/******************************************************/
-/* Method name:        updateFunction                 */
-/* Method description: Callback function for the      */
-/*                     Alarm Timer.                   */
-/*                                                    */
-/* Input params:                                      */
-/* Output params:                                     */
-/******************************************************/
-void IRAM_ATTR updateFunction() {
-  iContMiliseconds += 1;
-  // Every 10 ms call
-  if (iContMiliseconds % 10 == 0) {
-    cptCameraPanTiltControl.updatePosition(iAxisX, iAxisY);
-  }
 }
 
 /******************************************************/
