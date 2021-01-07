@@ -17,6 +17,7 @@
 #include <HTTPClient.h>
 #include "OV2640.h"
 #include "CameraPanTiltControl.h"
+#include "MovementControl.h"
 
 // Defines
 #define PWDN_GPIO_NUM     32
@@ -39,6 +40,9 @@
 #define TILT_SERVO_PIN    12
 #define PAN_SERVO_PIN     13
 
+#define LEFT_SERVO_PIN    15
+#define RIGHT_SERVO_PIN   14
+
 #define WIFI_SSID "Quarto"
 #define WIFI_PWD "Netto2014"
 
@@ -58,12 +62,19 @@ const char JHEADER[] = "HTTP/1.1 200 OK\r\n" \
                        "Content-type: image/jpeg\r\n\r\n";
 const int jhdLen = strlen(JHEADER);
 int iContMiliseconds = 0;
+MovementControl mcMovementControl(LEFT_SERVO_PIN, RIGHT_SERVO_PIN);
 CameraPanTiltControl cptCameraPanTiltControl(TILT_SERVO_PIN, PAN_SERVO_PIN);
+int iTempX = 511;
+int iTempY = 511;
 int iAxisX = 511;
 int iAxisY = 511;
+int iLeftMotorPosition = 511;
+int iRightMotorPosition = 511;
 hw_timer_t *hwTimer = NULL;
-HTTPClient httpClient;
-const char* serverName = "http://blynk-cloud.com/2bJCP-DrOGFj3RMy1Rm76e8N3_54lLk8/get/V2";
+HTTPClient httpClientPanTilt;
+HTTPClient httpClientMovement;
+const char* panTiltServerName = "http://blynk-cloud.com/2bJCP-DrOGFj3RMy1Rm76e8N3_54lLk8/get/V2";
+const char* movementServerName = "http://blynk-cloud.com/2bJCP-DrOGFj3RMy1Rm76e8N3_54lLk8/get/V1";
 
 /******************************************************/
 /* Method name:        updateFunction                 */
@@ -76,8 +87,9 @@ const char* serverName = "http://blynk-cloud.com/2bJCP-DrOGFj3RMy1Rm76e8N3_54lLk
 void IRAM_ATTR updateFunction() {
   iContMiliseconds += 1;
   // Every 10 ms call
-  if (iContMiliseconds % 1000 == 0) {
+  if (iContMiliseconds % 10 == 0) {
     cptCameraPanTiltControl.updatePosition(iAxisX, iAxisY);
+    mcMovementControl.updateMovement(iLeftMotorPosition, iRightMotorPosition);
   }
 }
 
@@ -276,7 +288,8 @@ void setup()
   Serial.begin(115200);
   initCamera();
   initWiFi();
-  httpClient.begin(serverName);
+  httpClientPanTilt.begin(panTiltServerName);
+  httpClientMovement.begin(movementServerName);
   initTimerAlarm(1, 80, 1000); // Create Timer of 1 MHz with an alarm of 1 ms
 }
 
@@ -292,10 +305,20 @@ void setup()
 void loop()
 {
   server.handleClient();
-  int httpCode = httpClient.GET();
-  String payload = httpClient.getString();
+  int httpCode = httpClientPanTilt.GET();
+  String payload = httpClientPanTilt.getString();
   JSONVar myArray = JSON.parse(payload);
   iAxisX = JSON.parse(myArray[0]);
   iAxisY = JSON.parse(myArray[1]);
+  delay(20);
+  
+  server.handleClient();
+  httpCode = httpClientMovement.GET();
+  payload = httpClientMovement.getString();
+  myArray = JSON.parse(payload);
+  iTempX = JSON.parse(myArray[0]);
+  iTempY = JSON.parse(myArray[1]);
+  iLeftMotorPosition = 511 + (iTempY - 511) +(iTempX - 511)*0.40;
+  iRightMotorPosition = 511 + (iTempY - 511) -(iTempX - 511)*0.40;
   delay(20);
 }
