@@ -13,12 +13,15 @@
 #include <WiFi.h>
 #include <WebServer.h>
 #include <WiFiClient.h>
+#include <Arduino_JSON.h>
+#include <HTTPClient.h>
 #include "OV2640.h"
+#include "CameraPanTiltControl.h"
 
 // Defines
 #define PWDN_GPIO_NUM     32
 #define RESET_GPIO_NUM    -1
-#define XCLK_GPIO_NUM      0
+#define XCLK_GPIO_NUM     0
 #define SIOD_GPIO_NUM     26
 #define SIOC_GPIO_NUM     27
 #define Y9_GPIO_NUM       35
@@ -28,13 +31,16 @@
 #define Y5_GPIO_NUM       21
 #define Y4_GPIO_NUM       19
 #define Y3_GPIO_NUM       18
-#define Y2_GPIO_NUM        5
+#define Y2_GPIO_NUM       5
 #define VSYNC_GPIO_NUM    25
 #define HREF_GPIO_NUM     23
 #define PCLK_GPIO_NUM     22
 
-#define SSID1 "Quarto"
-#define PWD1 "Netto2014"
+#define TILT_SERVO_PIN    12
+#define PAN_SERVO_PIN     13
+
+#define WIFI_SSID "Quarto"
+#define WIFI_PWD "Netto2014"
 
 // Variables
 OV2640 cam;
@@ -51,6 +57,62 @@ const char JHEADER[] = "HTTP/1.1 200 OK\r\n" \
                        "Content-disposition: inline; filename=capture.jpg\r\n" \
                        "Content-type: image/jpeg\r\n\r\n";
 const int jhdLen = strlen(JHEADER);
+int iContMiliseconds = 0;
+CameraPanTiltControl cptCameraPanTiltControl(TILT_SERVO_PIN, PAN_SERVO_PIN);
+int iAxisX = 511;
+int iAxisY = 511;
+hw_timer_t *hwTimer = NULL;
+HTTPClient httpClient;
+const char* serverName = "http://blynk-cloud.com/2bJCP-DrOGFj3RMy1Rm76e8N3_54lLk8/get/V2";
+
+/******************************************************/
+/* Method name:        updateFunction                 */
+/* Method description: Callback function for the      */
+/*                     Alarm Timer.                   */
+/*                                                    */
+/* Input params:                                      */
+/* Output params:                                     */
+/******************************************************/
+void IRAM_ATTR updateFunction() {
+  iContMiliseconds += 1;
+  // Every 10 ms call
+  if (iContMiliseconds % 1000 == 0) {
+    cptCameraPanTiltControl.updatePosition(iAxisX, iAxisY);
+  }
+}
+
+/******************************************************/
+/* Method name:        initTimerAlarm                 */
+/* Method description: Callback function for the      */
+/*                     Alarm Timer.                   */
+/*                                                    */
+/* Input params:       int iTimerNumber - Timer number*/
+/*                     to be set, can be one of the   */
+/*                     4 timers. (0 to 3)             */
+/*                     int iPrescaler - Preescaler to */
+/*                     divide the timer Frequency, the*/
+/*                     base value is 80 Mhz, so it's  */
+/*                     common to use 80 to obtain     */
+/*                     1 MHz. (16 bit)                */
+/*                     int iAlarmPeriod - Multiplier  */
+/*                     of the obtained frequency, to  */
+/*                     set the timer. (For a          */
+/*                     Preescaler of 80, 1000 will    */
+/*                     result in a 1 ms Alarm period) */
+/* Output params:                                     */
+/******************************************************/
+void initTimerAlarm(int iTimerNumber, int iPrescaler, int iAlarmPeriod) {
+  //Timer setup
+  // Inicia o timer 0 (of 4) e divide sua
+  // frequência base por 80 (1 MHz de resultado)
+  hwTimer = timerBegin(iTimerNumber, iPrescaler, true);
+  // Adiciona uma função de retorno para a interrupção
+  timerAttachInterrupt(hwTimer, &updateFunction, true);
+  // Cria alarme para chamar a função a cada 1 ms
+  timerAlarmWrite(hwTimer, iAlarmPeriod, true);
+  // Inicia o Alarme
+  timerAlarmEnable(hwTimer);
+}
 
 /******************************************************/
 /* Method name:        handleJpegStream               */
@@ -182,7 +244,7 @@ void initWiFi(void)
 {
   IPAddress ip;
   WiFi.mode(WIFI_STA);
-  WiFi.begin(SSID1, PWD1);
+  WiFi.begin(WIFI_SSID, WIFI_PWD);
   while (WiFi.status() != WL_CONNECTED)
   {
     delay(500);
@@ -214,6 +276,8 @@ void setup()
   Serial.begin(115200);
   initCamera();
   initWiFi();
+  httpClient.begin(serverName);
+  initTimerAlarm(1, 80, 1000); // Create Timer of 1 MHz with an alarm of 1 ms
 }
 
 /******************************************************/
@@ -228,4 +292,10 @@ void setup()
 void loop()
 {
   server.handleClient();
+  int httpCode = httpClient.GET();
+  String payload = httpClient.getString();
+  JSONVar myArray = JSON.parse(payload);
+  iAxisX = JSON.parse(myArray[0]);
+  iAxisY = JSON.parse(myArray[1]);
+  delay(20);
 }

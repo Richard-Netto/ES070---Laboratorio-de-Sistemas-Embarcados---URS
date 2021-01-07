@@ -60,8 +60,8 @@ camera_config_t esp32cam_aithinker_config{
     .pin_href = 23,
     .pin_pclk = 22,
     .xclk_freq_hz = 20000000,
-    .ledc_timer = LEDC_TIMER_1,
-    .ledc_channel = LEDC_CHANNEL_1,
+    .ledc_timer = LEDC_TIMER_0,
+    .ledc_channel = LEDC_CHANNEL_0,
     .pixel_format = PIXFORMAT_JPEG,
     // .frame_size = FRAMESIZE_UXGA, // needs 234K of framebuffer space
     // .frame_size = FRAMESIZE_SXGA, // needs 160K for framebuffer
