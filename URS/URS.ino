@@ -18,36 +18,37 @@
 #include "OV2640.h"
 #include "CameraPanTiltControl.h"
 #include "MovementControl.h"
+#include "SonarSensor.h"
 
 // Defines
-#define PWDN_GPIO_NUM             32
-#define RESET_GPIO_NUM            -1
-#define XCLK_GPIO_NUM             00 
-#define SIOD_GPIO_NUM             26
-#define SIOC_GPIO_NUM             27
-#define Y9_GPIO_NUM               35
-#define Y8_GPIO_NUM               34
-#define Y7_GPIO_NUM               39
-#define Y6_GPIO_NUM               36
-#define Y5_GPIO_NUM               21
-#define Y4_GPIO_NUM               19
-#define Y3_GPIO_NUM               18
-#define Y2_GPIO_NUM               05
-#define VSYNC_GPIO_NUM            25
-#define HREF_GPIO_NUM             23
-#define PCLK_GPIO_NUM             22
+#define PWDN_GPIO_NUM              32
+#define RESET_GPIO_NUM             -1
+#define XCLK_GPIO_NUM              00
+#define SIOD_GPIO_NUM              26
+#define SIOC_GPIO_NUM              27
+#define Y9_GPIO_NUM                35
+#define Y8_GPIO_NUM                34
+#define Y7_GPIO_NUM                39
+#define Y6_GPIO_NUM                36
+#define Y5_GPIO_NUM                21
+#define Y4_GPIO_NUM                19
+#define Y3_GPIO_NUM                18
+#define Y2_GPIO_NUM                05
+#define VSYNC_GPIO_NUM             25
+#define HREF_GPIO_NUM              23
+#define PCLK_GPIO_NUM              22
 
-#define TILT_SERVO_PIN            12
-#define PAN_SERVO_PIN             13
+#define TILT_SERVO_PIN             12
+#define PAN_SERVO_PIN              13
 
-#define LEFT_SERVO_PIN            15
-#define RIGHT_SERVO_PIN           14
+#define LEFT_SERVO_PIN             15
+#define RIGHT_SERVO_PIN            14
 
-#define FRONT_SENSOR_ECHO_PIN     02
-#define FRONT_SENSOR_TRIGGER_PIN  04
-
-#define BACK_SENSOR_ECHO_PIN      16
-#define BACK_SENSOR_TRIGGER_PIN   00
+#define FRONT_SENSOR_ECHO_PIN      02
+#define FRONT_SENSOR_TRIGGER_PIN   04
+#define FRONT_SENSOR_FITTING_A     54.6839 // Obtained by empirical manners
+#define FRONT_SENSOR_FITTING_B     5.7238  // Obtained by empirical manners
+#define FRONT_SENSOR_STOP_DISTANCE 8
 
 #define WIFI_SSID "Quarto"
 #define WIFI_PWD "Netto2014"
@@ -70,12 +71,15 @@ const int jhdLen = strlen(JHEADER);
 int iContMiliseconds = 0;
 MovementControl mcMovementControl(LEFT_SERVO_PIN, RIGHT_SERVO_PIN);
 CameraPanTiltControl cptCameraPanTiltControl(TILT_SERVO_PIN, PAN_SERVO_PIN);
+SonarSensor ssFloorSensor(FRONT_SENSOR_ECHO_PIN, FRONT_SENSOR_TRIGGER_PIN, FRONT_SENSOR_FITTING_A, FRONT_SENSOR_FITTING_B);
 int iTempX = 511;
 int iTempY = 511;
 int iAxisX = 511;
 int iAxisY = 511;
 int iLeftMotorPosition = 511;
 int iRightMotorPosition = 511;
+float iFloorDistance;
+boolean bThereIsNoFloor = false;
 hw_timer_t *hwTimer = NULL;
 HTTPClient httpClientPanTilt;
 HTTPClient httpClientMovement;
@@ -95,6 +99,11 @@ void IRAM_ATTR updateFunction() {
   // Every 10 ms call
   if (iContMiliseconds % 10 == 0) {
     cptCameraPanTiltControl.updatePosition(iAxisX, iAxisY);
+    iLeftMotorPosition = 200;
+    iRightMotorPosition = 200;
+    // If there's no Floor, stop the car from going foward
+    if (bThereIsNoFloor && 511 < iLeftMotorPosition ) iLeftMotorPosition = 511;
+    if (bThereIsNoFloor && 511 < iRightMotorPosition) iRightMotorPosition = 511;
     mcMovementControl.updateMovement(iLeftMotorPosition, iRightMotorPosition);
   }
 }
@@ -149,15 +158,15 @@ void handleJpegStream(void)
 
   client.write(HEADER, hdrLen);
   client.write(BOUNDARY, bdrLen);
-  int n = 0;
+  int iTemp = 0;
   while (true)
   {
     if (!client.connected()) break;
-    if (10 < n) {
+    if (10 < iTemp) {
       handleVariables();
-      n = 0;
+      iTemp = 0;
     }
-    n++;
+    iTemp++;
     cam.run();
     s = cam.getSize();
     client.write(CTNTTYPE, cntLen);
@@ -166,24 +175,6 @@ void handleJpegStream(void)
     client.write((char *)cam.getfb(), s);
     client.write(BOUNDARY, bdrLen);
   }
-}
-
-/******************************************************/
-/* Method name:        handleJpg                      */
-/* Method description: Function to handle jpeg image. */
-/*                                                    */
-/* Input params:                                      */
-/* Output params:                                     */
-/******************************************************/
-void handleJpg(void)
-{
-  WiFiClient client = server.client();
-
-  cam.run();
-  if (!client.connected()) return;
-
-  client.write(JHEADER, jhdLen);
-  client.write((char *)cam.getfb(), cam.getSize());
 }
 
 /******************************************************/
@@ -253,20 +244,35 @@ void initCamera(void)
   cam.init(config);
 }
 
-void handleVariables(void){
+/******************************************************/
+/* Method name:        handleVariables                */
+/* Method description: Function to apply the update of*/ 
+/*                     the variables necessary for    */
+/*                     movement and distance          */
+/*                     measurement.                   */
+/*                                                    */
+/* Input params:                                      */
+/* Output params:                                     */
+/******************************************************/
+void handleVariables(void) {
+  // Pan Tilt Variables
   int httpCode = httpClientPanTilt.GET();
   String payload = httpClientPanTilt.getString();
   JSONVar myArray = JSON.parse(payload);
   iAxisX = JSON.parse(myArray[0]);
   iAxisY = JSON.parse(myArray[1]);
-  
+  // Movement Variables
   httpCode = httpClientMovement.GET();
   payload = httpClientMovement.getString();
   myArray = JSON.parse(payload);
   iTempX = JSON.parse(myArray[0]);
   iTempY = JSON.parse(myArray[1]);
-  iLeftMotorPosition = 511 + (iTempY - 511) -(iTempX - 511)*0.40;
-  iRightMotorPosition = 511 + (iTempY - 511) +(iTempX - 511)*0.40;
+  iLeftMotorPosition = 511 + (iTempY - 511) - (iTempX - 511) * 0.40;
+  iRightMotorPosition = 511 + (iTempY - 511) + (iTempX - 511) * 0.40;
+  // Sensor Variables
+  iFloorDistance = ssFloorSensor.getDistance();
+  if (FRONT_SENSOR_STOP_DISTANCE < iFloorDistance)bThereIsNoFloor = true;
+  else bThereIsNoFloor = false;
 }
 /******************************************************/
 /* Method name:        initWiFi                       */
@@ -291,12 +297,10 @@ void initWiFi(void)
   ip = WiFi.localIP();
   Serial.println(F("WiFi connected"));
   Serial.println("");
-  Serial.println(ip);
   Serial.print("Stream Link: http://");
   Serial.print(ip);
   Serial.println("/mjpeg/1");
   server.on("/mjpeg/1", HTTP_GET, handleJpegStream);
-  //server.on("/jpg", HTTP_GET, handleJpg);
   server.onNotFound(handleNotFound);
   server.begin();
 }
