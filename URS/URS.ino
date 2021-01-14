@@ -99,8 +99,6 @@ void IRAM_ATTR updateFunction() {
   // Every 10 ms call
   if (iContMiliseconds % 10 == 0) {
     cptCameraPanTiltControl.updatePosition(iAxisX, iAxisY);
-    iLeftMotorPosition = 200;
-    iRightMotorPosition = 200;
     // If there's no Floor, stop the car from going foward
     if (bThereIsNoFloor && 511 < iLeftMotorPosition ) iLeftMotorPosition = 511;
     if (bThereIsNoFloor && 511 < iRightMotorPosition) iRightMotorPosition = 511;
