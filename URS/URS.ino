@@ -20,28 +20,34 @@
 #include "MovementControl.h"
 
 // Defines
-#define PWDN_GPIO_NUM     32
-#define RESET_GPIO_NUM    -1
-#define XCLK_GPIO_NUM     0
-#define SIOD_GPIO_NUM     26
-#define SIOC_GPIO_NUM     27
-#define Y9_GPIO_NUM       35
-#define Y8_GPIO_NUM       34
-#define Y7_GPIO_NUM       39
-#define Y6_GPIO_NUM       36
-#define Y5_GPIO_NUM       21
-#define Y4_GPIO_NUM       19
-#define Y3_GPIO_NUM       18
-#define Y2_GPIO_NUM       5
-#define VSYNC_GPIO_NUM    25
-#define HREF_GPIO_NUM     23
-#define PCLK_GPIO_NUM     22
+#define PWDN_GPIO_NUM             32
+#define RESET_GPIO_NUM            -1
+#define XCLK_GPIO_NUM             00 
+#define SIOD_GPIO_NUM             26
+#define SIOC_GPIO_NUM             27
+#define Y9_GPIO_NUM               35
+#define Y8_GPIO_NUM               34
+#define Y7_GPIO_NUM               39
+#define Y6_GPIO_NUM               36
+#define Y5_GPIO_NUM               21
+#define Y4_GPIO_NUM               19
+#define Y3_GPIO_NUM               18
+#define Y2_GPIO_NUM               05
+#define VSYNC_GPIO_NUM            25
+#define HREF_GPIO_NUM             23
+#define PCLK_GPIO_NUM             22
 
-#define TILT_SERVO_PIN    12
-#define PAN_SERVO_PIN     13
+#define TILT_SERVO_PIN            12
+#define PAN_SERVO_PIN             13
 
-#define LEFT_SERVO_PIN    15
-#define RIGHT_SERVO_PIN   14
+#define LEFT_SERVO_PIN            15
+#define RIGHT_SERVO_PIN           14
+
+#define FRONT_SENSOR_ECHO_PIN     02
+#define FRONT_SENSOR_TRIGGER_PIN  04
+
+#define BACK_SENSOR_ECHO_PIN      16
+#define BACK_SENSOR_TRIGGER_PIN   00
 
 #define WIFI_SSID "Quarto"
 #define WIFI_PWD "Netto2014"
@@ -73,8 +79,8 @@ int iRightMotorPosition = 511;
 hw_timer_t *hwTimer = NULL;
 HTTPClient httpClientPanTilt;
 HTTPClient httpClientMovement;
-const char* panTiltServerName = "http://blynk-cloud.com/2bJCP-DrOGFj3RMy1Rm76e8N3_54lLk8/get/V2";
-const char* movementServerName = "http://blynk-cloud.com/2bJCP-DrOGFj3RMy1Rm76e8N3_54lLk8/get/V1";
+const char* panTiltServerName = "http://blynk-cloud.com/dGnsTBbfB-q_hLBMolkq0zI2Qafz5tbA/get/V2";
+const char* movementServerName = "http://blynk-cloud.com/dGnsTBbfB-q_hLBMolkq0zI2Qafz5tbA/get/V1";
 
 /******************************************************/
 /* Method name:        updateFunction                 */
@@ -143,10 +149,15 @@ void handleJpegStream(void)
 
   client.write(HEADER, hdrLen);
   client.write(BOUNDARY, bdrLen);
-
+  int n = 0;
   while (true)
   {
     if (!client.connected()) break;
+    if (10 < n) {
+      handleVariables();
+      n = 0;
+    }
+    n++;
     cam.run();
     s = cam.getSize();
     client.write(CTNTTYPE, cntLen);
@@ -242,6 +253,21 @@ void initCamera(void)
   cam.init(config);
 }
 
+void handleVariables(void){
+  int httpCode = httpClientPanTilt.GET();
+  String payload = httpClientPanTilt.getString();
+  JSONVar myArray = JSON.parse(payload);
+  iAxisX = JSON.parse(myArray[0]);
+  iAxisY = JSON.parse(myArray[1]);
+  
+  httpCode = httpClientMovement.GET();
+  payload = httpClientMovement.getString();
+  myArray = JSON.parse(payload);
+  iTempX = JSON.parse(myArray[0]);
+  iTempY = JSON.parse(myArray[1]);
+  iLeftMotorPosition = 511 + (iTempY - 511) -(iTempX - 511)*0.40;
+  iRightMotorPosition = 511 + (iTempY - 511) +(iTempX - 511)*0.40;
+}
 /******************************************************/
 /* Method name:        initWiFi                       */
 /* Method description: Set up Wifi connection, to the */
@@ -270,7 +296,7 @@ void initWiFi(void)
   Serial.print(ip);
   Serial.println("/mjpeg/1");
   server.on("/mjpeg/1", HTTP_GET, handleJpegStream);
-  server.on("/jpg", HTTP_GET, handleJpg);
+  //server.on("/jpg", HTTP_GET, handleJpg);
   server.onNotFound(handleNotFound);
   server.begin();
 }
@@ -305,20 +331,4 @@ void setup()
 void loop()
 {
   server.handleClient();
-  int httpCode = httpClientPanTilt.GET();
-  String payload = httpClientPanTilt.getString();
-  JSONVar myArray = JSON.parse(payload);
-  iAxisX = JSON.parse(myArray[0]);
-  iAxisY = JSON.parse(myArray[1]);
-  delay(20);
-  
-  server.handleClient();
-  httpCode = httpClientMovement.GET();
-  payload = httpClientMovement.getString();
-  myArray = JSON.parse(payload);
-  iTempX = JSON.parse(myArray[0]);
-  iTempY = JSON.parse(myArray[1]);
-  iLeftMotorPosition = 511 + (iTempY - 511) +(iTempX - 511)*0.40;
-  iRightMotorPosition = 511 + (iTempY - 511) -(iTempX - 511)*0.40;
-  delay(20);
 }
