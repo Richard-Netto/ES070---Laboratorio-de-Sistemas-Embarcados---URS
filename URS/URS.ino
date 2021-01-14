@@ -48,7 +48,7 @@
 #define FRONT_SENSOR_TRIGGER_PIN   04
 #define FRONT_SENSOR_FITTING_A     54.6839 // Obtained by empirical manners
 #define FRONT_SENSOR_FITTING_B     5.7238  // Obtained by empirical manners
-#define FRONT_SENSOR_STOP_DISTANCE 8
+#define FRONT_SENSOR_STOP_DISTANCE 12
 
 #define WIFI_SSID "Quarto"
 #define WIFI_PWD "Netto2014"
