@@ -57,8 +57,8 @@
 OV2640 ovCam;
 WebServer wsServer(80);
 const char cHEADER[] = "HTTP/1.1 200 OK\r\n" \
-                      "Access-Control-Allow-Origin: *\r\n" \
-                      "Content-Type: multipart/x-mixed-replace; boundary=123456789000000000000987654321\r\n";
+                       "Access-Control-Allow-Origin: *\r\n" \
+                       "Content-Type: multipart/x-mixed-replace; boundary=123456789000000000000987654321\r\n";
 const char cBOUNDARY[] = "\r\n--123456789000000000000987654321\r\n";
 const char cCTNTTYPE[] = "Content-Type: image/jpeg\r\nContent-Length: ";
 const int iHdrLen = strlen(cHEADER);
@@ -240,7 +240,7 @@ void initCamera(void)
 
 /******************************************************/
 /* Method name:        handleVariables                */
-/* Method description: Function to apply the update of*/ 
+/* Method description: Function to apply the update of*/
 /*                     the variables necessary for    */
 /*                     movement and distance          */
 /*                     measurement.                   */
