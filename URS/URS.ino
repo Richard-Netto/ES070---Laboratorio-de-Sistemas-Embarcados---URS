@@ -83,8 +83,8 @@ boolean bThereIsNoFloor = false;
 hw_timer_t *hwTimer = NULL;
 HTTPClient httpClientPanTilt;
 HTTPClient httpClientMovement;
-const char* panTiltServerName = "http://blynk-cloud.com/dGnsTBbfB-q_hLBMolkq0zI2Qafz5tbA/get/V2";
-const char* movementServerName = "http://blynk-cloud.com/dGnsTBbfB-q_hLBMolkq0zI2Qafz5tbA/get/V1";
+const char* panTiltServerName = "http://blynk-cloud.com/6AT_sWCIj5y1iP-39p0fdjjWUH2v5RBZ/get/V2";
+const char* movementServerName = "http://blynk-cloud.com/6AT_sWCIj5y1iP-39p0fdjjWUH2v5RBZ/get/V1";
 
 /******************************************************/
 /* Method name:        updateFunction                 */
