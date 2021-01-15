@@ -1,3 +1,17 @@
+/**************************************************/
+/* File name:        OV2640.h                     */
+/* File description: Header File for the          */
+/*                   OV2640 camera configuration  */
+/*                   and use functions, this      */
+/*                   lybrary is the authority of  */
+/*                   Sachin Soni, and can be found*/
+/*                   at his github page:          */
+/*                   https://github.com/techiesms */
+/*                                                */
+/* Author name:      Sachin Soni                  */
+/* Creation date:    20/11/2020                   */
+/* Revision date:    18/12/2020                   */
+/**************************************************/
 #ifndef OV2640_H_
 #define OV2640_H_
 
@@ -12,11 +26,11 @@ extern camera_config_t esp32cam_config, esp32cam_aithinker_config, esp32cam_ttgo
 
 class OV2640
 {
-public:
-    OV2640(){
-        fb = NULL;
+  public:
+    OV2640() {
+      fb = NULL;
     };
-    ~OV2640(){
+    ~OV2640() {
     };
     esp_err_t init(camera_config_t config);
     void run(void);
@@ -30,7 +44,7 @@ public:
     void setFrameSize(framesize_t size);
     void setPixelFormat(pixformat_t format);
 
-private:
+  private:
     void runIfNeeded(); // grab a frame if we don't already have one
 
     // camera_framesize_t _frame_size;
